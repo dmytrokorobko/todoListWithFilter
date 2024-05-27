@@ -7,6 +7,12 @@ import { useEffect, useState } from 'react';
 
 function App() {
   const [todos, setTodos] = useState(initialTasks);  
+  const [filteredTodos, setFilteredTodos] = useState(todos);
+
+  const [todo, setTodo] = useState('');
+  const [filterText, setFilterText] = useState('');
+  const [selectedCompletedValue, setSelectedCompletedValue] = useState('');
+
   function onSubmit(e) {
     e.preventDefault();
 
@@ -39,37 +45,47 @@ function App() {
   function onDeleted(id) {
     setTodos(todos.filter(todo => todo.id !== id));
   }
-
-  const [todo, setTodo] = useState('');
+  
   function onTodoChange(e) {
     setTodo(e.target.value);
   }
-
-  const [filterText, setFilterText] = useState('');
+  
   function onTextInput(e) {
-    setFilterText(e.target.value);
+    setFilterText(e.target.value);    
   }
-
-  const [selectedCompletedValue, setSelectedCompletedValue] = useState('');
+  
   function onCompletedChange(e) {
     setSelectedCompletedValue(e.target.value);
   }
 
   function onReset(e) {
     setFilterText('');
-    setSelectedCompletedValue('');
+    setSelectedCompletedValue('');        
   }
 
-  useEffect(() => {
-    console.log(filterText);
-    console.log(selectedCompletedValue);
-  }, [filterText, selectedCompletedValue]);
+  useEffect(() => {        
+    let updatedTodos = todos;
+
+    if (filterText) updatedTodos = updatedTodos.filter(todo => todo.title.includes(filterText));
+
+    if (selectedCompletedValue === 'Completed') updatedTodos = updatedTodos.filter(todo => todo.completed);
+    else if (selectedCompletedValue === 'Uncompleted') updatedTodos = updatedTodos.filter(todo => !todo.completed);
+
+    setFilteredTodos(updatedTodos);
+    
+  }, [todos, filterText, selectedCompletedValue]);
 
   return (
     <div className="App">
       <TodoForm onSubmit={onSubmit} todo={todo} onTodoChange={onTodoChange} />
-      <TodoFilter filterText={filterText} selectedCompletedValue={selectedCompletedValue} onTextInput={onTextInput} onCompletedChange={onCompletedChange} onReset={onReset} />
-      <TodoList todos={todos} onCompleted={onCompleted} onDeleted={onDeleted} />
+      <TodoFilter 
+        filterText={filterText} 
+        selectedCompletedValue={selectedCompletedValue} 
+        onTextInput={onTextInput} 
+        onCompletedChange={onCompletedChange} 
+        onReset={onReset} 
+      />
+      <TodoList todos={filteredTodos} onCompleted={onCompleted} onDeleted={onDeleted} />
     </div>
   );
 }
